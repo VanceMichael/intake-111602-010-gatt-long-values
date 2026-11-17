@@ -1,6 +1,8 @@
 import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
+import { join } from 'node:path';
 import { Catalog } from './catalog.mjs';
+import { Collector } from './collect.mjs';
 import { decode } from './decode.mjs';
 import { SourceClient } from './transport.mjs';
 import { profile } from './profile.mjs';
@@ -13,6 +15,7 @@ export async function previewOne(base, path = profile.previewPath) {
 
 export async function startApplication({ source, root, port = 0 }) {
   const catalog = await new Catalog(root).initialize();
+  let queue = Promise.resolve();
   const server = createServer(async (request, response) => {
     response.setHeader('content-type', 'application/json; charset=utf-8');
     try {
@@ -33,6 +36,23 @@ export async function startApplication({ source, root, port = 0 }) {
         return response.end(JSON.stringify(receipt));
       }
       if (request.method === 'GET' && url.pathname === '/receipts') return response.end(JSON.stringify(await catalog.list()));
+      if (request.method === 'POST' && url.pathname === '/collection') {
+        const chunks = [];
+        for await (const chunk of request) chunks.push(chunk);
+        const text = Buffer.concat(chunks).toString('utf8');
+        const input = text ? JSON.parse(text) : {};
+        const device = input.device || source;
+        const run = queue.then(() => Collector.open({ root: join(root, 'collection'), device })
+          .then(collector => collector.runPass(new SourceClient(source))));
+        queue = run.catch(() => {});
+        const report = await run;
+        return response.end(JSON.stringify(report));
+      }
+      if (request.method === 'GET' && url.pathname === '/collection') {
+        const collector = await Collector.open({ root: join(root, 'collection'),
+          device: url.searchParams.get('device') || source });
+        return response.end(JSON.stringify(collector.report()));
+      }
       if (request.method === 'GET' && url.pathname.startsWith('/objects/')) {
         response.setHeader('content-type', 'application/octet-stream');
         return response.end(await catalog.object(url.pathname.split('/').at(-1)));

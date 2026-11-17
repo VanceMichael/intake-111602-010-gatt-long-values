@@ -3,7 +3,7 @@ import { dispatch } from './domain.mjs';
 import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 
-export async function startSource({ scenario = 'ordinary', port = 0 } = {}) {
+export async function startSource({ scenario = 'ordinary', port = 0, domain = true } = {}) {
   const scenarioPath = new URL(`../fixtures/${scenario}.json`, import.meta.url);
   const config = JSON.parse(await readFile(scenarioPath, 'utf8'));
   let phase = 0;
@@ -29,7 +29,7 @@ export async function startSource({ scenario = 'ordinary', port = 0 } = {}) {
       const routes = config.phases[phase].routes;
       const url = new URL(path, 'http://localhost');
       const canonical = value => { const parsed = new URL(value, 'http://localhost'); parsed.searchParams.sort(); return parsed.pathname + parsed.search; };
-      let route = await dispatch({ url, method: request.method, phase, state: domainState, headers: request.headers });
+      let route = domain ? await dispatch({ url, method: request.method, phase, state: domainState, headers: request.headers }) : null;
       if (!route) route = routes.find(item => canonical(item.path) === canonical(path) && (item.method || 'GET') === request.method);
       if (route?.json !== undefined) route = { ...route, body: JSON.stringify(route.json), headers: { 'content-type': 'application/json', ...route.headers } };
       requests.push({ path, phase, method: request.method,

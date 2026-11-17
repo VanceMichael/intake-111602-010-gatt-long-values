@@ -4,6 +4,7 @@ export const profile = {
   "previewKeys": [
     "connection",
     "databaseHash",
+    "service",
     "characteristic",
     "handle",
     "offset",

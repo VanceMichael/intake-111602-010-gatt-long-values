@@ -1,0 +1,69 @@
+{
+  "phases": [
+    {
+      "routes": [
+        {
+          "path": "/gatt/services",
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": "{\"databaseHash\": \"db-a\", \"services\": [{\"uuid\": \"181A\", \"start\": 16, \"end\": 40, \"characteristics\": [{\"uuid\": \"2A6E\", \"handle\": 33}]}]}"
+        },
+        {
+          "path": "/gatt/read/33?offset=0",
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": "{\"connection\": \"conn-1\", \"databaseHash\": \"db-a\", \"service\": \"181A\", \"characteristic\": \"2A6E\", \"handle\": 33, \"offset\": 0, \"mtu\": 23, \"version\": \"record-7\", \"valueHex\": \"56495349542d323032363b74656d7065726174757265\", \"complete\": false}"
+        },
+        {
+          "path": "/gatt/read/33?offset=22",
+          "headers": {
+            "content-type": "application/json"
+          },
+          "disconnect": true,
+          "body": "{\"connection\": \"conn-1\", \"databaseHash\": \"db-a\", \"service\": \"181A\", \"characteristic\": \"2A6E\", \"handle\": 33, \"offset\": 22, \"mtu\": 23, \"version\": \"record-7\", \"valueHex\": \"3d32332e353b68756d69646974793d36303b73657269\", \"complete\": false}"
+        },
+        {
+          "path": "/gatt/events",
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": "{\"events\": []}"
+        }
+      ]
+    },
+    {
+      "routes": [
+        {
+          "path": "/gatt/services",
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": "{\"databaseHash\": \"db-a\", \"services\": [{\"uuid\": \"181A\", \"start\": 16, \"end\": 40, \"characteristics\": [{\"uuid\": \"2A6E\", \"handle\": 35}]}]}"
+        },
+        {
+          "path": "/gatt/read/35?offset=22",
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": "{\"connection\": \"conn-2\", \"databaseHash\": \"db-a\", \"service\": \"181A\", \"characteristic\": \"2A6E\", \"handle\": 35, \"offset\": 22, \"mtu\": 23, \"version\": \"record-7\", \"valueHex\": \"3d32332e353b68756d69646974793d36303b73657269\", \"complete\": false}"
+        },
+        {
+          "path": "/gatt/read/35?offset=44",
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": "{\"connection\": \"conn-2\", \"databaseHash\": \"db-a\", \"service\": \"181A\", \"characteristic\": \"2A6E\", \"handle\": 35, \"offset\": 44, \"mtu\": 23, \"version\": \"record-7\", \"valueHex\": \"616c3d6c61622d61\", \"complete\": true}"
+        },
+        {
+          "path": "/gatt/events",
+          "headers": {
+            "content-type": "application/json"
+          },
+          "body": "{\"events\": []}"
+        }
+      ]
+    }
+  ]
+}
