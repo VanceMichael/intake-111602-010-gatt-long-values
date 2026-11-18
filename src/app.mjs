@@ -1,6 +1,7 @@
 import { createServer } from 'node:http';
 import { fileURLToPath } from 'node:url';
 import { Catalog } from './catalog.mjs';
+import { Collector } from './collect.mjs';
 import { decode } from './decode.mjs';
 import { SourceClient } from './transport.mjs';
 import { profile } from './profile.mjs';
@@ -13,6 +14,8 @@ export async function previewOne(base, path = profile.previewPath) {
 
 export async function startApplication({ source, root, port = 0 }) {
   const catalog = await new Catalog(root).initialize();
+  const collector = await new Collector({ client: new SourceClient(source), root, catalog,
+    targets: profile.collectCharacteristics }).initialize();
   const server = createServer(async (request, response) => {
     response.setHeader('content-type', 'application/json; charset=utf-8');
     try {
@@ -21,6 +24,17 @@ export async function startApplication({ source, root, port = 0 }) {
       if (request.method === 'GET' && url.pathname === '/preview') {
         const result = await previewOne(source, url.searchParams.get('path') || profile.previewPath);
         return response.end(JSON.stringify({ source: result.url, preview: result.preview }));
+      }
+      if (request.method === 'POST' && url.pathname === '/collection/run') {
+        const chunks = [];
+        for await (const chunk of request) chunks.push(chunk);
+        const raw = Buffer.concat(chunks);
+        const input = raw.length ? JSON.parse(raw) : {};
+        const status = await collector.run({ targets: Array.isArray(input.characteristics) ? input.characteristics : undefined });
+        return response.end(JSON.stringify(status));
+      }
+      if (request.method === 'GET' && url.pathname === '/collection/status') {
+        return response.end(JSON.stringify(collector.status()));
       }
       if (request.method === 'POST' && url.pathname === '/receipts') {
         const chunks = [];
@@ -45,7 +59,7 @@ export async function startApplication({ source, root, port = 0 }) {
     }
   });
   await new Promise(resolve => server.listen(port, '127.0.0.1', resolve));
-  return { base: `http://127.0.0.1:${server.address().port}`, catalog,
+  return { base: `http://127.0.0.1:${server.address().port}`, catalog, collector,
     close: () => new Promise(resolve => { server.closeAllConnections(); server.close(resolve); }) };
 }
 

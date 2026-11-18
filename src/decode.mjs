@@ -9,6 +9,7 @@ export function decode(bytes) {
   if (!Number.isInteger(value.handle) || !Number.isInteger(value.offset) || !/^(?:[a-f0-9]{2})*$/i.test(value.valueHex || '')) throw new Error('属性分片无效');
   const data = Buffer.from(value.valueHex, 'hex');
   if (data.length > value.mtu - 1) throw new Error('属性分片超过协商长度');
-  return { connection: value.connection, databaseHash: value.databaseHash, characteristic: value.characteristic,
-    handle: value.handle, offset: value.offset, version: value.version, valueHex: value.valueHex, complete: value.complete === true };
+  return { connection: value.connection ?? null, databaseHash: value.databaseHash ?? null, service: value.service ?? null,
+    characteristic: value.characteristic ?? null, handle: value.handle, offset: value.offset, mtu: value.mtu ?? null,
+    version: value.version ?? null, valueHex: value.valueHex, complete: value.complete === true };
 }

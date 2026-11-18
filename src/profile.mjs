@@ -4,11 +4,16 @@ export const profile = {
   "previewKeys": [
     "connection",
     "databaseHash",
+    "service",
     "characteristic",
     "handle",
     "offset",
+    "mtu",
     "version",
     "valueHex",
     "complete"
+  ],
+  "collectCharacteristics": [
+    "2A6E"
   ]
 };

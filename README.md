@@ -17,9 +17,11 @@ npm run demo
 
 需要交互时分别运行 `npm run source` 与 `npm start`。来源默认监听本机 4310 端口，应用默认监听 4320；可用 `PORT`、`SOURCE_URL`、`DATA_DIR` 配置。`GET /preview` 获取预览，`POST /receipts` 接收当前资料，`GET /receipts` 查询凭据，`GET /objects/<摘要>` 回读原件。应用只允许配置到本机的资料服务。
 
+`POST /collection/run` 执行连续采集：先核对服务目录，再处理通知与 Service Changed 事件，最后按偏移分段读取长属性；可用 `{"characteristics": [...]}` 指定特征。`GET /collection/status` 查询每个读取身份下的当前值、分段进度、哪些值完整、哪些还要重读。采集状态持久化在数据目录 `collection/state.json`，断线或重启后可续传，但重连后先重新核对目录再使用句柄。
+
 ## 目录
 
-`source/` 负责资料源的发布日期和传输状态；`src/decode.mjs` 解释一份来源资料；`src/catalog.mjs` 管理不可变原件及接收凭据；`src/app.mjs` 提供查看服务。资料含义及来源控制见 `docs/资料接口.md`。
+`source/` 负责资料源的发布日期和传输状态；`src/decode.mjs` 解释一份来源资料；`src/catalog.mjs` 管理不可变原件及接收凭据；`src/collect.mjs` 连续采集完整属性值，按设备连接、属性语义和数据库版本决定读取身份；`src/app.mjs` 提供查看服务。资料含义及来源控制见 `docs/资料接口.md`。
 
 ## 容器
 

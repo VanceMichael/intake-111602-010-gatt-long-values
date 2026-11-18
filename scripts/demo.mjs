@@ -14,6 +14,14 @@ try {
   const body = await fetch(`${app.base}/objects/${saved.digest}`).then(response => response.arrayBuffer());
   if (body.byteLength !== saved.bytes) throw new Error('原始资料长度不符');
   process.stdout.write(`原件已接收：${saved.digest}，${saved.bytes} 字节\n`);
+  const collection = await fetch(`${app.base}/collection/run`, { method: 'POST', body: '{}' }).then(response => response.json());
+  process.stdout.write(`连续采集：目录 ${collection.databaseHash}，稳定=${collection.settled}，待重读=${JSON.stringify(collection.needsReRead)}\n`);
+  for (const value of collection.values) {
+    const current = value.current
+      ? `版本 ${value.current.version}，${value.current.bytes} 字节，完整=${value.current.complete}，来源 ${value.current.source}`
+      : '无值';
+    process.stdout.write(`  ${value.characteristic}@${value.databaseHash}：${current}\n`);
+  }
 } finally {
   await app.close();
   await source.close();
